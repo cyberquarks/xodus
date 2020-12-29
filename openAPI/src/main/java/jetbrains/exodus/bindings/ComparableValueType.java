@@ -18,6 +18,9 @@ package jetbrains.exodus.bindings;
 import jetbrains.exodus.ExodusException;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class ComparableValueType {
 
     public static final int STRING_VALUE_TYPE = 2;
@@ -61,6 +64,8 @@ public class ComparableValueType {
     private final int typeId;
     private final ComparableBinding binding;
     private final Class<? extends Comparable> clazz;
+    public static final List<ComparableValueType> registeredTypes = new ArrayList<>();
+
 
     public ComparableValueType(final int typeId, @NotNull final ComparableBinding binding, @NotNull final Class<? extends Comparable> clazz) {
         this.typeId = typeId;
@@ -81,7 +86,13 @@ public class ComparableValueType {
     }
 
     public static ComparableBinding getPredefinedBinding(final int typeId) {
-        return PREDEFINED_BINDINGS[typeId];
+        for(ComparableValueType type : registeredTypes) {
+            if(type.getTypeId() == typeId) {
+                return type.getBinding();
+            }
+        }
+        ComparableBinding binding = PREDEFINED_BINDINGS[typeId];
+        return binding;
     }
 
     public static ComparableValueType getPredefinedType(@NotNull final Class<? extends Comparable> clazz) {
@@ -90,6 +101,17 @@ public class ComparableValueType {
                 return PREDEFINED_COMPARABLE_VALUE_TYPES[i];
             }
         }
+        for(ComparableValueType type : registeredTypes) {
+            if(type.clazz.isAssignableFrom(clazz)) {
+                return type;
+            }
+        }
         throw new ExodusException("Unsupported Comparable value type: " + clazz);
+    }
+
+    public static void registerCustomType(int typeId,
+                                          @NotNull final Class<? extends Comparable> clazz,
+                                          @NotNull final ComparableBinding binding) {
+        registeredTypes.add(new ComparableValueType(typeId, binding, clazz));
     }
 }

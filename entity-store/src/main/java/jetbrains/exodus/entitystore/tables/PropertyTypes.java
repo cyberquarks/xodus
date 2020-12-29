@@ -77,6 +77,7 @@ public final class PropertyTypes {
         if (typesByClass.put(clazz, propType) != null) {
             throw new EntityStoreException("Already registered property type " + clazz);
         }
+        ComparableValueType.registerCustomType(typeId, clazz, binding);
     }
 
     public PropertyValue entryToPropertyValue(@NotNull final ByteIterable entry) {
